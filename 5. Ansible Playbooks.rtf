@@ -1,0 +1,290 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang2057{\fonttbl{\f0\fnil Calibri;}{\f1\fnil\fcharset0 Calibri;}}
+{\colortbl ;\red0\green128\blue0;}
+{\*\generator Riched20 10.0.26100}\viewkind4\paperw11906\paperh16838\psz9
+{\*\jarte object RichPersist
+  Version = 2
+  LMarg = 1440
+  RMarg = 1440
+  TMarg = 1440
+  BMarg = 1440
+  Equal = True
+  Orient = 1
+  Size = 9
+  Width = 2100
+  Height = 2970
+  LHdr = '$3B'
+  MHdr = '$3B'
+  RHdr = '$3B'
+  LFtr = '$3B'
+  MFtr = '$3B'
+  RFtr = '$3B'
+  PrtHdr = True
+  PrtFtr = True
+  HdrMarg = 1440
+  FtrMarg = 1440
+  HdrFont.Charset = DEFAULT_CHARSET
+  HdrFont.Color = clWindowText
+  HdrFont.Height = -11
+  HdrFont.Name = 'MS Sans Serif'
+  HdrFont.Style = []
+  Wrap = 2
+  WMark = 'None'
+  WColor = 13822463
+  SpellDict = 'sscebr2.clx'
+end
+}\uc1 
+\pard\f0\fs22 Ansible Playbooks\par
+\par
+ What is a Playbook?\par
+\f1\lang16393\tab A Playbook is a YAML file in Ansible that defines a series of tasks to be executed on target hosts. It is used to automate configurations, deployments, and orchestration in a structured way.\par
+\par
+What is play?\par
+\tab A Play is a section within the playbook that defines tasks for a set of hosts.\par
+A playbook can have one or more plays \par
+Example :\par
+----------------------------------------------------------------------\par
+---\par
+- name: Configure webservers\par
+  hosts: webservers\par
+  tasks:\par
+    - name: Install nginx\par
+      yum:\par
+        name: nginx\par
+        state: present\par
+\par
+- name: Configure dbservers\par
+  hosts: dbservers\par
+  tasks:\par
+    - name: Install MySQL\par
+      yum:\par
+        name: mysql-server\par
+        state: present\par
+----------------------------------------------------------------------\par
+The above playbook is written using yaml \par
+\par
+ YAML Syntax:\par
+\tab YAML stands for "YAML Ain't Markup Language".\par
+\tab YAML is indentation-sensitive.\par
+\tab Use spaces, not tabs.\par
+\tab Starts with --- to denote the beginning of the YAML document.\par
+Components of playbook yaml file:\par
+\tab name\par
+\tab hosts\par
+\tab become\par
+\tab vars\par
+\tab tasks\par
+\tab handlers\par
+\tab gather_facts\par
+\tab roles\par
+\tab tags\par
+\tab loops\par
+\tab conditionals\par
+\cf1\highlight1 ------------------------------------------------------------------------------------------------------------------\cf0\highlight0\par
+1. name:\par
+\tab The name keyword is used to give a human-readable description to:\par
+\tab\tab Play\par
+\tab\tab Task\par
+\tab\tab Handler\tab\par
+\tab It is not mandatory but highly recommended . \par
+\par
+name at the Play and Task Level\par
+\tab Describes the purpose of the entire play \par
+----------------------------------------------------\par
+Example:\par
+--- \par
+- name: Install and Start Apache on Web Servers\par
+  hosts: webservers\par
+  become: yes\par
+\par
+  tasks:\par
+    - name: Install Apache\par
+      yum:\par
+        name: httpd\par
+        state: present\par
+\par
+    - name: Start Apache Service\par
+      service:\par
+        name: httpd\par
+        state: started\par
+--------------------------------------------------------\par
+The play name is "Install and Start Apache on Web Servers".\par
+In logs, Ansible will display this as a heading before running the tasks.\par
+\par
+There are also task names here and Without name, the task output would be less descriptive.\par
+----------------------------------------------------------\par
+name in Handlers:\par
+\tab Handlers also use name to describe what action they perform when notified.\par
+\par
+---------------------------\par
+Example:\par
+handlers:\par
+  - name: Restart Apache\par
+    service:\par
+      name: httpd\par
+      state: restarted\par
+--------------------------\par
+\cf1\highlight1 ------------------------------------------------------------------------------------------------------------------\cf0\highlight0\par
+2. hosts:\par
+\tab The hosts keyword in a playbook specifies which target machines (managed nodes) the playbook will apply to.It tells Ansible where to execute the tasks defined in the play.\par
+\par
+\tab It can Refers to a group of hosts or individual hostnames defined in the inventory file.\par
+\tab Can be:\par
+\tab\tab Group Name (defined in inventory)\par
+\tab\tab Single Host\par
+\tab\tab all (to target all hosts in inventory)\par
+\tab\tab Pattern (like webservers:dbservers)\par
+-------------------\par
+Example 1: to particular group\par
+---\par
+- name: Install Apache on Web Servers\par
+  hosts: webservers\par
+------------------\par
+This playbook will:\par
+\tab Connect to all hosts listed under webservers group.\par
+\tab Run the tasks there.\par
+-----------------\par
+Example 2: to all\par
+---\par
+- name: Ping All Servers\par
+  hosts: all\par
+-----------------\par
+This pings every host listed in the inventory.\par
+-----------------\par
+Example 3 : to multiple group\par
+---\par
+- name: Apply common settings\par
+  hosts: webservers:dbservers\par
+----------------\par
+Here, the playbook targets both webservers and dbservers.\par
+--------------\par
+\cf1\highlight1 ------------------------------------------------------------------------------------------------------------------\cf0\highlight0\par
+3. become:\par
+\tab become allows you to execute commands with elevated privileges (e.g., sudo, su, etc.) during a playbook run.\par
+-------------------\par
+Example\par
+---\par
+- name: Install package with elevated privileges\par
+  hosts: webservers\par
+  become: yes  # or become: true\par
+-------------------\par
+This will use sudo by default to install nginx as the root user.\par
+\cf1\highlight1 ------------------------------------------------------------------------------------------------------------------\cf0\highlight0\par
+4.  vars:\par
+\tab vars in Ansible are variables defined to store data such as strings, lists, dictionaries, or numbers\par
+Purpose of vars\par
+\tab Avoid hardcoding values.\par
+\tab Make playbooks reusable and dynamic.\par
+\tab Simplify maintenance and updates.\par
+Example:\par
+---------------\par
+- name: Install and configure web server\par
+  hosts: webserver\par
+  become: yes\par
+  vars:\par
+    package_name: apache2\par
+    service_name: apache2\par
+  tasks:\par
+    - name: Install package\par
+      apt:\par
+        name: "\{\{ package_name \}\}"\par
+        state: present\par
+\par
+    - name: Start service\par
+      service:\par
+        name: "\{\{ service_name \}\}"\par
+        state: started\par
+-----------------------\par
+\cf1\highlight1 ------------------------------------------------------------------------------------------------------------------\cf0\highlight0\par
+ 5. tasks \par
+\tab In Ansible, tasks are the action steps that define what operations to perform on target hosts, such as:\tab\par
+\tab Installing packages\par
+\tab Creating files\par
+\tab Restarting services\par
+\tab Copying files\par
+\tab Running commands\par
+Tasks are executed sequentially, top to bottom, within a play.\par
+-------------\par
+Example:\par
+- name: Install nginx\par
+  apt:\par
+    name: nginx\par
+    state: present\par
+\par
+- name: Start nginx service\par
+  service:\par
+    name: nginx\par
+    state: started\par
+-----------\par
+\cf1\highlight1 ------------------------------------------------------------------------------------------------------------------\cf0\highlight0\par
+6.  handlers:\par
+\tab Handlers in Ansible are special tasks that are triggered only when notified by other tasks.\par
+ Purpose of Handlers\par
+\tab Optimize playbooks by avoiding unnecessary service restarts.\par
+\tab Improve idempotency \f0\emdash  only restart/reload when something actually changed.\par
+\f1 Example:\par
+---------\par
+- name: Deploy Webserver\par
+  hosts: webserver\par
+  become: yes\par
+\par
+  tasks:\par
+    - name: Install nginx\par
+      apt:\par
+        name: nginx\par
+        state: present\par
+\par
+    - name: Copy nginx config\par
+      copy:\par
+        src: nginx.conf\par
+        dest: /etc/nginx/nginx.conf\par
+      notify: restart nginx\par
+\par
+  handlers:\par
+    - name: restart nginx\par
+      service:\par
+        name: nginx\par
+        state: restarted\par
+-----------\par
+\tab The handler restart nginx only runs if the config file was changed.\par
+\par
+\cf1\highlight1 ------------------------------------------------------------------------------------------------------------------\cf0\highlight0\par
+\par
+7. loops:\par
+\tab In Ansible, loops are used when you want to repeat a task multiple times \f0\emdash  for example, installing many packages, creating multiple users, or writing lines to a file.\par
+\f1 --------\f0\par
+\f1 Example:\par
+- name: Install multiple packages\par
+  apt:\par
+    name: "\{\{ item \}\}"\par
+    state: present\par
+  loop:\par
+    - git\par
+    - curl\par
+    - htop\par
+----------\par
+\cf1\highlight1 ------------------------------------------------------------------------------------------------------------------\cf0\highlight0\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\par
+\f0\lang2057\par
+}
+ 
