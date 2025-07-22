@@ -1,0 +1,226 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang2057{\fonttbl{\f0\fnil Calibri;}{\f1\fnil\fcharset0 Calibri;}{\f2\fmodern\fprq1\fcharset0 Courier New;}}
+{\colortbl ;\red255\green0\blue0;\red0\green0\blue255;\red0\green0\blue0;\red0\green77\blue187;\red128\green0\blue0;\red255\green255\blue0;\red255\green0\blue255;}
+{\*\generator Riched20 10.0.26100}\viewkind4\paperw11906\paperh16838\psz9
+{\*\jarte object RichPersist
+  Version = 2
+  LMarg = 1440
+  RMarg = 1440
+  TMarg = 1440
+  BMarg = 1440
+  Equal = True
+  Orient = 1
+  Size = 9
+  Width = 2100
+  Height = 2970
+  LHdr = '$3B'
+  MHdr = '$3B'
+  RHdr = '$3B'
+  LFtr = '$3B'
+  MFtr = '$3B'
+  RFtr = '$3B'
+  PrtHdr = True
+  PrtFtr = True
+  HdrMarg = 1440
+  FtrMarg = 1440
+  HdrFont.Charset = DEFAULT_CHARSET
+  HdrFont.Color = clWindowText
+  HdrFont.Height = -11
+  HdrFont.Name = 'MS Sans Serif'
+  HdrFont.Style = []
+  Wrap = 2
+  WMark = 'None'
+  WColor = 13822463
+  SpellDict = 'sscebr2.clx'
+end
+}\uc1 
+\pard\f0\fs28\par
+\cf1\f1\fs36\lang9\tab\tab\tab\tab Freestyle hands on:\par
+Infrastructure:\cf0\f0\fs28\lang16393\par
+aws --- ubuntu 22 --- t2.medium --- http , https , all traffic --- volume:20 --- save\par
+\cf1\f1\fs36\lang9 Install:\cf0\f0\fs28\lang16393\par
+go to ---> {{\field{\*\fldinst{HYPERLINK https://www.jenkins.io/download/ }}{\fldrslt{https://www.jenkins.io/download/\ul0\cf0}}}}\f0\fs28  ---> stable (lts) --- install java --- install jenkins\par
+\f1 Step 1 --- \f0 Instance: \par
+\f1\tab\f0 systemctl status jenkins\par
+\f1\tab\f0 public-ip-of-instance:8080\par
+\f1\tab\f0 ---> paste pasword from given link\par
+\f1\tab\f0 ---> install suggested plugins\par
+\f1 Step 2 --- \f0 jenkins:\par
+\cf1\f1\lang9 Clone job:\cf0\lang16393\par
+---> jenkins  dashboard --- new item --- enter job name --- click \tab freestye --- save\par
+--->   description : optional --- SCM: git : enter the repo : check \tab branch --- apply --- save --- build\par
+\tab [check workspace , (/var/lib/jenkins/workspace) , console log]\par
+\cf1\lang9 Compile job:\cf0\lang16393\par
+---> jenkins dashboard --- manage jenkins --- plugins --- available \tab plugins --- maven integration --- install\par
+---> jenkins dashboard --- manage jenkins --- tools --- scroll down --- \tab maven --- \tab\f0 add maven --- give name --- choose version --- save \par
+---> jenkins  dashboard --- new item --- enter job name --- click \tab freestye --- \f1\tab\f0 save\par
+--->   description : optional --- SCM: git : enter the repo : check \tab branch --- build \f1\tab\f0 steps: invoke maven top-level targets: choose \tab ur maven --- goals : \f1\tab\f0 compile ---  apply --- \tab save --- build\par
+\tab [check workspace , (/var/lib/jenkins/workspace) , console log]\par
+\cf1\f1\lang9 Code review job:\cf0\lang16393\par
+
+\pard\sa200\sl276\slmult1 ---> \lang9 jenkins --- new item --- freestyle --- scm --- git --- repo url --- build steps : \lang16393\tab\f0\lang9 invoke top level maven targets ---\cf3 name: my-maven\cf0 --- goals : \f1\lang16393\tab\f0\lang9 pmd:pmd --- save  --- build\par
+
+\pard (workspace --- target ---pmd.xml contains report for code review and we can convert it to trend report which is much easier to read for that we have a plugin called             "warning " that will take the pmd.xml file and convert it to trend report )\par
+---> dashboard --- manage jenkins --- plugin --- available plugin --- \f1\lang16393\tab\f0\lang9 "warnings" ---install ---dashboard ---  code review job --- configure --- \f1\lang16393\tab\f0\lang9 post build Actions --- record compiler warning and static analytics \f1\lang16393\tab\f0\lang9 result --- tool : pmd --- report file pattern : **/pmd.xml --- save --- \f1\lang16393\tab\f0\lang9 build --- open job --- pmd warning --- trend report  \par
+
+\pard\sa200\sl276\slmult1\cf1 Test job:\cf0\par
+\tab jenkins --- new item --- freestyle --- scm --- git --- repo url --- build steps : \f1\lang16393\tab\f0\lang9 invoke top level maven ---\cf3 name: my-maven \cf0 --- goals : test--- \f1\lang16393\tab\f0\lang9 save  --- \f1\lang16393\tab\f0\lang9 build\par
+\tab (test job --- workspace --- target --- surefire reports --- time --- ( to \f1\lang16393\tab\f0\lang9 beautify this report we have a plugin ) --- dashboard --- plugin --- \f1\lang16393\tab\f0\lang9 installed plugin ---  junit )\par
+\tab test job --- configure --- post build actions --- publish JUnit test result \f1\lang16393\tab\f0\lang9 report --- test report xml : target/surefire-reports/*.xml (path where file \f1\lang16393\tab\f0\lang9 is present in respective to wrkspace) ---  save --- refresh --- latest test \f1\lang16393\tab\f0\lang9 results \par
+\f1\lang16393\tab\f0\lang9 ( test cases will be written by developers , devops engineers just \f1\lang16393\tab\f0\lang9 automate jenkins in such a way that  all the above jobs happen \f1\lang16393\tab\f0\lang9 automatically when developers push code to github)\par
+\cf1 Package job:\cf0\par
+\tab jenkins --- new item --- freestyle --- scm --- git --- repo url --- build steps : \f1\lang16393\tab\f0\lang9 invoke top level maven  targets --- \cf3 name: my-maven --- \cf0 goals : \f1\lang16393\tab\f0\lang9 package --- save  --- build\par
+\tab (once package done it gives u a war file )\par
+
+\pard\f1\fs36 ---------------------------------------------------------------------------\par
+
+\pard\sa200\sl276\slmult1\fs28 now all these jobs are not interlinked where in industry we need it to be interlinked . This link b/w jobs can be done in 2 ways \par
+\tab 1. Upstream \par
+\tab 2. Downstream\par
+\cf1 Upstream:\cf0\par
+\tab  A -------- B --------- C --------- D ---------- E\par
+Consider above 5 are jobs where job A will tell job B to start after job A succesfully executed . Here job A is responsible to invoke job B.\par
+\cf1 Downstream\cf0\par
+It is responsibility of job B to look after job A , and as soon as job A is succesfull job B will start execution where job C will look after job B.\par
+\par
+\cf1 Link job using Upstream: \par
+\tab\cf3 jenkins dashboard --- clone job --- configure --- post build actions --- build other project : --- project to build : compile--- apply --- save\cf1\par
+\tab\cf3 jenkins dashboard --- compile job --- configure --- post build actions --- build other project : --- project to build : code review  --- apply --- save\par
+\tab code review --- configure --- post build actions --- build other project : --- project to build : unit testing --- apply --- save\par
+\cf0\tab\cf3 unit testing --- configure --- post build actions --- build other project : --- project to build : package --- apply --- save\par
+make changes im git hub to see the Stream\par
+\cf1 Link job using Downstream: \par
+\tab\cf3 compile--- configure --- build trigger: build after other projects are build: clone--- apply --- save\par
+\cf0\tab\cf3 code review --- configure --- build trigger: build after other projects are build: compile--- apply --- save\par
+\tab unit testing --- configure --- build trigger: build after other projects are build: code review--- apply --- save\par
+\cf0\tab\cf3 package --- configure --- build trigger: build after other projects are build: unit testing--- apply --- save\par
+-----------------------------------------------------------------------------\par
+\cf1 Pipeline plugin :\cf3\par
+\tab To see all above jobs running in a pipeline format install pipeline plugin\par
+\tab Dashboard --- manage jenkins --- plugins --- available plugin --- Build pipeline --- install --- go back to top page\par
+Dashboard --- new view (+) --- build pipeline view --- name:enter --- create --- upstram/downstream config : 1. clone --- ok  \par
+\tab run --- executing job yellow in color , failed job red in color , passed job green in color\par
+---------------------------------------------------------------------------\par
+\cf1 Email notification to team:\cf3\par
+\tab If a jobn is failed and u need to send email to developer \par
+\tab Dashboard --- manage jenkins --- system --- email notification --- SMTP Server : smtp.gmail.com---  default user email suffix : @gmail.com --- advanced --- \par
+Use SMTP Authentication : username : your_email@gmail.com  --- Password : vzig mxwj ogos qrwz--- click use ssl --- SMTP Port : 465 --- click test configuration by sending test emails : test email receipient : enter ur email  --- click test configuration\par
+\cf4 Error occurs to resolve the error we need to authenticate jenkins with gmail\par
+\tab\cf3 go to ur gmail account --- security --- step verification : on --- get started --- phne number : text msg --- verify --- go to search tab and search for : app passwords: name : jenkins --- create --- copy password (vzig mxwj ogos qrwz) --- paste in \par
+Use SMTP Authentication : username : your_email@gmail.com  --- Password : vzig mxwj ogos qrwz--- Test configuration --- save\par
+
+\pard\cf0\fs36 ---------------------------------------------------------------------------\f0\fs28\lang16393\par
+
+\pard\sa200\sl276\slmult1\cf1\f1\lang9 Configure email to job:\cf3\par
+\tab Any job --- configure --- post-build actions --- email-notification --- receipient : enter email --- send email for every unstable build --- save \par
+\tab now make few error in certain job and try to build , check email  \par
+\cf4 So all we did was just to understand how pipeline works but industry use pipeline as code.\par
+
+\pard\cf0 ---------------------------------------------------------------------------\f0\lang16393\par
+\f1 CI is done , now CD\par
+
+\pard\sa200\sl276\slmult1\cf1\fs36\lang9 Deploying a project in Tomcat Server:\cf3\par
+
+\pard\nowidctlpar\tab\tab\cf0\f2\fs28\lang16393 qa -- ubuntu 22 version --install apache tomcat 9\par
+\par
+install apache:\par
+\par
+---> sudo apt-cache search tomcat\par
+\par
+---> sudo apt-get install -y tomcat9 tomcat9-admin  (or)\par
+\par
+---> sudo apt-get install -y tomcat9\par
+\par
+---> sudo apt-get install -y tomcat9-admin\par
+\par
+---> sudo systemctl start tomcat9\par
+\par
+---> sudo systemctl enable tomcat9\par
+\par
+---> qa_public_ip:8080\par
+\par
+user in tomcat qa and production server:\par
+Linux command : \par
+\par
+---> cd /etc/tomcat9/\par
+\par
+---> ls\par
+\par
+you will find file tomcat-users.xml\par
+open the file \par
+\par
+---> sudo nano tomcat-users.xml\par
+\par
+on top of end tag enter user details\par
+\par
+\par
+\par
+<!-- Administrator role with full access -->\par
+    <role rolename="manager-gui"/>\par
+    <role rolename="manager-script"/>\par
+    <role rolename="manager-status"/>\par
+    <role rolename="admin-gui"/>\par
+\par
+    <!-- Admin user with roles -->\par
+\par
+    <user username="admin" password="password" roles="manager-gui,manager-script,manager-status,admin-gui"/>\par
+\par
+    <user username="sree" password="12345" roles="manager-gui,manager-script,manager-status,admin-gui"/>\par
+\par
+\par
+restart tomcat\par
+\par
+---> sudo service tomcat9 restart\par
+\par
+now the configuration part is over check wether Jenkins is up and running. \par
+---> systemctl status jenkins\par
+\par
+run Jenkins \par
+
+\pard\sa200\sl276\slmult1 ---> ipaddress:8080 \par
+\par
+\highlight5 [dashboard --- manage Jenkins --- credentials --- Stores scoped to Jenkins tab --- Domains section --- global --- click down arrow --- add credentials --- username : GitHub account username --- password : GitHub account pass --- id ( will be generated automatically) ---]\par
+
+\pard\highlight0\f0\par
+\f1 --------------------------------------------------------------------------------------\par
+
+\pard\nowidctlpar\highlight6\f2 CD:Continuous Delivery\highlight0\par
+\par
+You need to deploy the artifact to qa server\par
+\par
+for this we need to install a plugin called " deploy to container " plugin\par
+\par
+--- dashboard --- manage Jenkins --- plugins --- available plugins --- deploy to container --- install --- goback --- job --- configure --- postbuild activity --- deploy war to a container --- deploy war or ear to a container : ( sometimes multiple war files will be created so to deploy all war files) **/*.war --- context path : qaenv ( take note of this context path ) --- Add Container : Tomcat 9x remote --- tomcat credentials:\par
+add --- Jenkins ---username: --- password : --- tomcat url :{{\field{\*\fldinst{HYPERLINK http://private-ip_qa:8080 }}{\fldrslt{http://private-ip_qa:8080\ul0\cf0}}}}\f2\fs28   (qa servers)--- apply --- save\par
+\par
+\par
+so deployment is done how to access it , there wil be multiple applications deployed to the server so how will you access that exact application --- its using the context path . How ?\par
+\par
+--- public_ip_Qa_server:8080/qaenv \par
+
+\pard\sa200\sl276\slmult1\f1\fs36\lang9\par
+
+\pard\nowidctlpar\highlight6\f2\fs28\lang16393 Testing job:\highlight0\par
+\par
+  Jenkins dashboard --- new item ---testing ---freestyle ---ok ---description :() ----scm:git(add testing repository url) --- apply ---save ( explain what happens here -- no use in just downloading we also need to run the script ) ---configure ---build ---execute shell :(java -jar testing.jar test script will have this )\par
+echo "passed" ---apply --save ---job ---build now \par
+\par
+ So continuous testing is all about downloading testing related script and running testing related script . so here dev job is doing stage 1, 2 and 3 and testing job is doing stage 4 . now whenever you run dev job stage 1, 2 and 3 should be executed and it should also trigger stage 4. how can ed this so that all the four stages happen back to back.\par
+\par
+---> go to first job ---> configure ---post build actions---build other projects---projects to build: testing (name of job that is to be executed) ---> apply ---> save\par
+\par
+\highlight6 CD : Continuous Deployment :\highlight0\par
+\par
+when the build is success you have to deploy the artifact to production server --- for that we have to archive the artifact \par
+\par
+---> go to development job --- post build actions --- add post build --- archive the artifact --- scroll up --- **/*.war --- apply ---save --- build\par
+\par
+to copy artifact from one job to another job we need a plugin called " \highlight7 copy artifact\highlight0  "\par
+\par
+---> dashboard --- manage Jenkins --- plugin --- copy artifact ---install --- testing job --- configure  ---build --- add build step: copy artifact from another project --- project name : development --- apply --- post build actions: deploy ear/war files to container --- **/*.war --- prodenv --- addcontainer --- tomcat 9 --- credentials: add for prod server  ( open tomcat credentials and set credentials for prod server ) --- private ip of prod server : 8080 --- apply ---save\par
+\par
+
+\pard\f0\par
+    \par
+\f1\lang2057\par
+}
+ 
